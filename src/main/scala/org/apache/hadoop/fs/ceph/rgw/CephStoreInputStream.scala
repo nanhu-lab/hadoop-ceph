@@ -22,7 +22,7 @@ import java.io.{ByteArrayInputStream, IOException}
 
 /**
  * The input stream for Ceph RGW.
- * The class uses downloading to read data from the object content
+ * The class uses downloading to read data from the object content.
  * stream.
  */
 class CephStoreInputStream(buf: Array[Byte])
@@ -56,3 +56,4 @@ class CephStoreInputStream(buf: Array[Byte])
     false
   }
   }
+
