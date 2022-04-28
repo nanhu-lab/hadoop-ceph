@@ -24,8 +24,9 @@ import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.util.Progressable
 import org.apache.log4j.Logger
 import CephStoreUtil.{checkRootPath, getCompletePath, getObjectPath, getSuffixes}
-import org.javaswift.joss.client.factory.{AccountFactory, AuthenticationMethod}
+import org.javaswift.joss.client.factory.{AccountFactory, AuthenticationMethod, AuthenticationMethodScope}
 import org.javaswift.joss.model.Account
+
 import java.io.{File, FileNotFoundException, IOException}
 import java.net.URI
 import java.util
@@ -42,6 +43,11 @@ class CephStoreSystem extends FileSystem {
   private val FS_CEPH_USERNAME = "spark.hadoop.fs.ceph.username"
   private val FS_CEPH_PASSWORD = "spark.hadoop.fs.ceph.password"
   private val FS_CEPH_URI = "spark.hadoop.fs.ceph.uri"
+  private val AUTH_URI = "spark.hadoop.fs.auth.uri"
+  private val TENANT_NAME = "spark.hadoop.fs.tenant.name"
+  private val TENANT_ID = "spark.hadoop.fs.tenant.id"
+  private val DOMAIN_NAME = "spark.hadoop.fs.domain.name"
+  private val AUTH_METHOD = "spark.hadoop.fs.auth.method"
   private var account: Account = null
   private var bucketName: String = null
   private var uri: URI = null
@@ -74,15 +80,27 @@ class CephStoreSystem extends FileSystem {
   private def getAccount = {
     val conf = getConf
     try {
-      new AccountFactory().setUsername(
+      if (conf.get(AUTH_METHOD) == "keystone") {
+        new AccountFactory()
+          .setUsername(conf.get(FS_CEPH_USERNAME))
+          .setPassword(conf.get(FS_CEPH_PASSWORD))
+          .setAuthenticationMethod(AuthenticationMethod.KEYSTONE_V3)
+          .setAuthUrl(conf.get(AUTH_URI))
+          .setTenantName(conf.get(TENANT_NAME))
+          .setTenantId(conf.get(TENANT_ID))
+          .setDomain(conf.get(DOMAIN_NAME))
+          .setAuthenticationMode(AuthenticationMethodScope.PROJECT_NAME)
+          .createAccount
+      } else { 
+        new AccountFactory().setUsername(
         conf.get(FS_CEPH_USERNAME)).setPassword(
         conf.get(FS_CEPH_PASSWORD)).setAuthenticationMethod(
         AuthenticationMethod.BASIC).setAuthUrl(conf.get(FS_CEPH_URI)).createAccount
+      }
     } catch {
-      case e: IOException =>
-        e.printStackTrace()
-        throw new IOException("Failed to create account! Please check your user information")
-
+        case e: IOException =>
+          e.printStackTrace()
+          throw new IOException("Failed to create account! Please check your user information")
     }
   }
 
