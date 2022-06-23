@@ -1,5 +1,5 @@
 # hadoop-ceph
-hadoop的抽象文件系统实现
+Implementation of Hadoop file system
 ## Ceph:RGW
 
 Delta Lake has built-in support for the various Ceph:RGW object storage systems with full transactional guarantees for concurrent reads and writes from multiple clusters. Delta Lake relies on Hadoop FileSystem APIs to access Ceph:RGW storage services.
