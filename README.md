@@ -24,7 +24,7 @@ This section explains how to quickly start reading and writing Delta tables on C
 
    ```bash
    bin/spark-shell \
-    --packages io.delta:delta-core_2.12:1.1.0,io.github.nanhu-lab:hadoop-cephrgw:1.0.2 \
+    --packages io.delta:delta-core_2.12:1.1.0,io.github.nanhu-lab:hadoop-cephrgw:1.0.3 \
     --conf spark.hadoop.fs.ceph.username=<your-cephrgw-username> \
     --conf spark.hadoop.fs.ceph.password=<your-cephrgw-password> \
     --conf spark.hadoop.fs.ceph.uri=<your-cephrgw-uri> \
