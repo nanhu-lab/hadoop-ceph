@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.permission.FsPermission
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.util.Progressable
 import org.apache.log4j.Logger
-import CephStoreUtil.{checkRootPath, getCompletePath, getObjectPath, getSuffixes}
+import CephStoreUtil.{checkRootPath, getObjectPath, getSuffixes}
 import org.javaswift.joss.client.factory.{AccountFactory, AuthenticationMethod, AuthenticationMethodScope}
 import org.javaswift.joss.model.Account
 
@@ -91,16 +91,16 @@ class CephStoreSystem extends FileSystem {
           .setDomain(conf.get(DOMAIN_NAME))
           .setAuthenticationMode(AuthenticationMethodScope.PROJECT_NAME)
           .createAccount
-      } else { 
+      } else {
         new AccountFactory().setUsername(
-        conf.get(FS_CEPH_USERNAME)).setPassword(
-        conf.get(FS_CEPH_PASSWORD)).setAuthenticationMethod(
-        AuthenticationMethod.BASIC).setAuthUrl(conf.get(FS_CEPH_URI)).createAccount
+          conf.get(FS_CEPH_USERNAME)).setPassword(
+          conf.get(FS_CEPH_PASSWORD)).setAuthenticationMethod(
+          AuthenticationMethod.BASIC).setAuthUrl(conf.get(FS_CEPH_URI)).createAccount
       }
     } catch {
-        case e: IOException =>
-          e.printStackTrace()
-          throw new IOException("Failed to create account! Please check your user information")
+      case e: IOException =>
+        e.printStackTrace()
+        throw new IOException("Failed to create account! Please check your user information")
     }
   }
 
@@ -150,7 +150,7 @@ class CephStoreSystem extends FileSystem {
   }
 
   override def rename(srcPath: Path, dstPath: Path): Boolean = {
-    if (srcPath.isRoot) { // Cannot rename root of file system
+    if (srcPath.isRoot) {
       if (LOG.isDebugEnabled) LOG.debug("Cannot rename the root of a filesystem")
       return false
     }
@@ -161,18 +161,7 @@ class CephStoreSystem extends FileSystem {
     if (parent != null) return false
 
     val srcStatus = getFileStatus(srcPath)
-    var dstStatus: FileStatus = null
-    try {
-      dstStatus = getFileStatus(dstPath)
-    } catch {
-      case fnde: FileNotFoundException =>
-        dstStatus = null
-    }
-    if (dstStatus == null) // If dst doesn't exist, check whether dst dir exists or not
-      dstStatus = getFileStatus(dstPath.getParent)
-    else {
 
-    }
     var succeed: Boolean = true
     if (srcStatus.isDirectory) {
       succeed = copyDirectory(srcPath, dstPath)
@@ -201,7 +190,7 @@ class CephStoreSystem extends FileSystem {
     val dstKey = dstPath.toUri.getPath
     val inputStream = account.getContainer(bucketName).getObject(srcKey.substring(1)).downloadObjectAsInputStream()
     val bareName = new File(srcPath.toUri.getPath).getName
-    val path = dstKey + "/" + bareName
+    val path = dstKey  + "/" + bareName
     account.getContainer(bucketName).getObject(path.substring(1)).uploadObject(inputStream)
     account.getContainer(bucketName).getObject(srcKey.substring(1)).delete()
     true
@@ -297,10 +286,12 @@ class CephStoreSystem extends FileSystem {
         }
 
     }
-    val objectName = getSuffixes(path.toUri.getHost) + pathToKey(qualifyPath)
-    val postfix = objectName.endsWith("/")
-    if (!postfix) account.getContainer(getSuffixes(objectName)).create()
-    else account.getContainer(objectName)
+    if(qualifyPath.toString.contains("_delta_log")) {
+      val objectName = getSuffixes(path.toUri.getHost) + pathToKey(qualifyPath)
+      val postfix = objectName.endsWith("/")
+      if (!postfix) account.getContainer(getSuffixes(objectName)).create()
+      else account.getContainer(objectName)
+    }
     true
   }
 

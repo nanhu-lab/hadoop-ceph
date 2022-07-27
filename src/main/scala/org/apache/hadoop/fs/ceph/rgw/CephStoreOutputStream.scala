@@ -61,7 +61,7 @@ class CephStoreOutputStream extends OutputStream {
 
   private def newBlockFile: File = {
     if (conf.get("fs.ceph.tmp.dir") == null) conf.set(
-      "fs.ceph.tmp.dir", conf.get("hadoop.tmp.dir") + "/oss")
+      "fs.ceph.tmp.dir", conf.get("hadoop.tmp.dir") + "/ceph")
     if (directoryAllocator == null) directoryAllocator = new LocalDirAllocator("fs.ceph.tmp.dir")
     directoryAllocator.createTmpFileForWrite(
       String.format("ceph-block-%04d-", Int.box(blockId)), blockSize, conf)
@@ -88,16 +88,8 @@ class CephStoreOutputStream extends OutputStream {
       var parent = hdfsPath.getParent
       var flag = true
 
-      while ( parent != null && flag){           //后续移出
-        val fileName = parent.toUri.getPath.substring(1) + "/"
-        val emptyObject = account.getContainer(bucketName).getObject(fileName)
-        if (emptyObject.exists()) {
-          emptyObject.delete()
-          flag = false
-        }
-        parent = parent.getParent
-      }
       account.getContainer(bucketName).getObject(objectPath.substring(1)).uploadObject(fis)
+
     }
     removeTemporaryFiles()
     closed = true
@@ -127,3 +119,4 @@ class CephStoreOutputStream extends OutputStream {
   }
 
 }
+
