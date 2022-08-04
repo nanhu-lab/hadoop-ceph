@@ -56,4 +56,3 @@ class CephStoreInputStream(buf: Array[Byte])
     false
   }
   }
-//TEST
