@@ -19,6 +19,7 @@ package org.apache.hadoop.fs.ceph.rgw
 import org.apache.hadoop.fs.permission.FsPermission
 import org.apache.hadoop.fs.{FileStatus, Path}
 /**
+ *
  * This class is used by listStatus for Ceph RGW files.
  */
 class CephStoreStatus(length: Long, isdir: Boolean, block_replication: Int,

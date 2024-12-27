@@ -36,10 +36,19 @@ This section explains how to quickly start reading and writing Delta tables on C
 2. Try out some basic Delta table operations on Ceph:RGW (in Scala):
 
 ```bash
-// Create a Delta table on Ceph:RGW:
+// Create a SparkSession
+val spark = SparkSession.builder().appName("Quickstart").master("local[*]")
+      .config("spark.hadoop.fs.ceph.username","<your-cephrgw-username>")
+      .config("spark.hadoop.fs.ceph.password", "<your-cephrgw-password>")
+      .config("spark.hadoop.fs.ceph.uri", "<your-cephrgw-uri>")
+      .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
+      .config("spark.delta.logStore.class", "org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
+      .config("spark.hadoop.fs.ceph.impl", "org.apache.hadoop.fs.ceph.rgw.CephStoreSystem")
+      
+// Create a Delta table on Ceph:RGW
 spark.range(5).write.format("delta").save("ceph://<your-cephrgw-container>/<path-to-delta-table>")
 
-// Read a Delta table on Ceph:RGW:
+// Read a Delta table on Ceph:RGW
 spark.read.format("delta").load("ceph://<your-cephrgw-container>/<path-to-delta-table>").show()
 ```
 
